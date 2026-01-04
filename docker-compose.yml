@@ -1,0 +1,50 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: vertex-db
+    environment:
+      POSTGRES_DB: vertex_db
+      POSTGRES_USER: vertex_user
+      POSTGRES_PASSWORD: vertex_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - vertex-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vertex_user -d vertex_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (serves frontend static files)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vertex-backend
+    ports:
+      - "8888:8888"
+    environment:
+      NODE_ENV: production
+      PORT: 8888
+      DATABASE_URL: postgresql://vertex_user:vertex_password@db:5432/vertex_db
+      JWT_SECRET: ${JWT_SECRET:-change-this-secure-secret-key-in-production}
+      JWT_EXPIRY: 7d
+      FIRST_USER_IS_ADMIN: "true"
+      CORS_ORIGIN: "*"
+    volumes:
+      - ./frontend:/app/frontend:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - vertex-network
+    command: sh -c "npm run migrate && npm run seed && npm start"
+
+volumes:
+  postgres_data:
+
+networks:
+  vertex-network:
+    driver: bridge

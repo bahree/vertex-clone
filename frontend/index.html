@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Vertex - Connect dots to form triangles and reveal beautiful images">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Vertex - Puzzle Game</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔺</text></svg>">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <p>Loading Vertex...</p>
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="auth-screen hidden">
+        <div class="auth-container">
+            <h1>🔺 Vertex</h1>
+            <p class="tagline">Connect dots, form triangles, reveal images</p>
+            
+            <div id="login-form" class="auth-form">
+                <h2>Login</h2>
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button id="login-btn" class="btn btn-primary">Login</button>
+                <p class="auth-switch">Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+            </div>
+
+            <div id="signup-form" class="auth-form hidden">
+                <h2>Sign Up</h2>
+                <input type="email" id="signup-email" placeholder="Email" required>
+                <input type="text" id="signup-username" placeholder="Username (optional)">
+                <input type="password" id="signup-password" placeholder="Password" required>
+                <button id="signup-btn" class="btn btn-primary">Sign Up</button>
+                <p class="auth-switch">Already have an account? <a href="#" id="show-login">Login</a></p>
+            </div>
+
+            <div id="auth-error" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="game-screen hidden">
+        <!-- Header -->
+        <header class="game-header">
+            <div class="header-left">
+                <h1>🔺 Vertex</h1>
+            </div>
+            <div class="header-center">
+                <span id="puzzle-name">Puzzle</span>
+                <span id="puzzle-difficulty" class="difficulty-badge"></span>
+            </div>
+            <div class="header-right">
+                <button id="menu-btn" class="btn btn-icon">☰</button>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <main class="game-main">
+            <div class="game-container">
+                <canvas id="game-canvas"></canvas>
+            </div>
+
+            <!-- Game Controls -->
+            <div class="game-controls">
+                <div class="control-group">
+                    <button id="undo-btn" class="btn btn-control">↶ Undo</button>
+                    <button id="reset-btn" class="btn btn-control">⟳ Reset</button>
+                </div>
+                <div class="progress-info">
+                    <span id="triangles-completed">0</span> / <span id="triangles-total">0</span> triangles
+                </div>
+                <div class="control-group">
+                    <button id="hint-btn" class="btn btn-control">💡 Hint</button>
+                    <button id="next-puzzle-btn" class="btn btn-primary hidden">Next Puzzle</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Menu Modal -->
+        <div id="menu-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Menu</h2>
+                    <button class="modal-close">×</button>
+                </div>
+                <div class="modal-body">
+                    <button id="new-puzzle-btn" class="btn btn-full">🎮 New Puzzle</button>
+                    <button id="stats-btn" class="btn btn-full">📊 Statistics</button>
+                    <button id="profile-btn" class="btn btn-full">👤 Profile</button>
+                    <button id="logout-btn" class="btn btn-full">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Modal -->
+        <div id="stats-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Your Statistics</h2>
+                    <button class="modal-close">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-completed">0</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-avg-time">-</div>
+                            <div class="stat-label">Avg Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-best-time">-</div>
+                            <div class="stat-label">Best Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-attempts">0</div>
+                            <div class="stat-label">Total Attempts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Victory Modal -->
+        <div id="victory-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🎉 Puzzle Complete!</h2>
+                </div>
+                <div class="modal-body">
+                    <p id="victory-message">Great job!</p>
+                    <p id="victory-time"></p>
+                    <button id="victory-next-btn" class="btn btn-primary">Next Puzzle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/vertex.js"></script>
+    <script src="js/triangle.js"></script>
+    <script src="js/inputHandler.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
