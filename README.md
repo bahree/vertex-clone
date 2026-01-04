@@ -396,6 +396,75 @@ CREATE TABLE user_queue (
 
 ## Adding Puzzles
 
+### Automated Puzzle Generation (NEW! 🎉)
+
+Generate many puzzles automatically with our built-in generators:
+
+#### Option 1: Generate Geometric Puzzles (Quick & Easy)
+
+Creates 19 puzzles with triangle grids, square grids, hexagons, and stars:
+
+```bash
+# From host machine
+docker-compose exec backend npm run generate:geometric
+
+# Or run directly in backend directory
+cd backend
+npm run generate:geometric
+```
+
+**Output:** `frontend/puzzles/generated-geometric.json`
+- 4 Triangle grid variations (3x3 to 6x6)
+- 4 Square grid variations (2x2 to 5x5)
+- 3 Hexagon patterns (2-4 layers)
+- 4 Star patterns (5-8 points)
+- Varying difficulties (easy to hard)
+
+#### Option 2: Generate Random Delaunay Puzzles
+
+Creates 15 random puzzles using Delaunay triangulation:
+
+```bash
+docker-compose exec backend npm run generate:random
+```
+
+**Output:** `frontend/puzzles/generated-random.json`
+- 5 Easy puzzles (10-15 vertices)
+- 5 Medium puzzles (15-25 vertices)
+- 5 Hard puzzles (25-35 vertices)
+- Unique every time you run it!
+
+#### Option 3: Generate ALL Puzzles at Once
+
+Run both generators and get 34+ puzzles:
+
+```bash
+docker-compose exec backend npm run generate:all
+```
+
+**Output:** 
+- `frontend/puzzles/generated-all.json` (combined)
+- `frontend/puzzles/generated-geometric.json` (geometric only)
+- `frontend/puzzles/generated-random.json` (random only)
+
+**Then import:**
+```bash
+docker-compose down
+docker-compose up --build
+```
+
+#### Option 4: Image-Based Puzzle Generation
+
+Convert images (emoji, icons, objects) to puzzles like original Vertex!
+
+**See the complete guide:** [docs/IMAGE_BASED_GENERATOR.md](docs/IMAGE_BASED_GENERATOR.md)
+
+**Quick summary:**
+- Use online low-poly tools
+- Manual vertex placement with p5.js
+- Full automated pipeline with sharp + Delaunay
+- Best for creating recognizable image puzzles
+
 ### Method 1: Quick Add (Recommended for Testing)
 
 1. **Edit the puzzle JSON file**:

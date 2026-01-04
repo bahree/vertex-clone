@@ -9,7 +9,10 @@
     "migrate": "node migrations/run.js",
     "seed": "node src/utils/seedPuzzles.js",
     "setup": "npm run migrate && npm run seed",
-    "test": "jest"
+    "test": "jest",
+    "generate:geometric": "node src/utils/generateGeometric.js",
+    "generate:random": "node src/utils/generateRandom.js",
+    "generate:all": "node src/utils/generateAll.js"
   },
   "keywords": ["vertex", "puzzle", "game"],
   "author": "Amit Bahree",
