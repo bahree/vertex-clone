@@ -71,20 +71,62 @@ A modern clone of the discontinued NYTimes Vertex puzzle game. Connect numbered 
    docker-compose up -d
    ```
 
-#### Mac/Linux Setup
+#### Linux (Ubuntu/Debian) Setup
 
-1. Clone the repository:
-```bash
-git clone https://github.com/bahree/vertex-clone.git
-cd vertex-clone
-```
+1. **Install Docker and Docker Compose**:
+   ```bash
+   # Update package index
+   sudo apt-get update
+   
+   # Install Docker
+   sudo apt-get install -y docker.io docker-compose
+   
+   # Add your user to docker group (to run without sudo)
+   sudo usermod -aG docker $USER
+   
+   # Log out and back in for group changes to take effect
+   ```
 
-2. Build and start:
-```bash
-docker-compose up --build
-```
+2. **Clone the repository**:
+   ```bash
+   git clone https://github.com/bahree/vertex-clone.git
+   cd vertex-clone
+   ```
 
-3. Access the game at `http://localhost:8888`
+3. **Build and start**:
+   ```bash
+   docker-compose up --build
+   ```
+   
+   First run will take a few minutes to build images and seed puzzles.
+
+4. **Access the game**: `http://localhost:8888`
+
+5. **To run in background**:
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
+
+#### macOS Setup
+
+1. **Install Docker Desktop**:
+   - Download [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/)
+   - Install and start Docker Desktop
+   - Wait for Docker to be running (whale icon in menu bar)
+
+2. **Clone the repository**:
+   ```bash
+   git clone https://github.com/bahree/vertex-clone.git
+   cd vertex-clone
+   ```
+
+3. **Build and start**:
+   ```bash
+   docker-compose up --build
+   ```
+
+4. **Access the game**: `http://localhost:8888`
 
 ### Manual Setup
 
@@ -352,6 +394,162 @@ CREATE TABLE user_queue (
 );
 ```
 
+## Adding Puzzles
+
+### Method 1: Quick Add (Recommended for Testing)
+
+1. **Edit the puzzle JSON file**:
+   ```bash
+   # Open the sample puzzles file
+   nano frontend/puzzles/sample-puzzles.json
+   # or use your preferred editor
+   ```
+
+2. **Add your puzzle** following this format:
+   ```json
+   {
+     "name": "Your Puzzle Name",
+     "difficulty": "easy",  // or "medium", "hard"
+     "theme": "shapes",     // or "objects", "nature", "animals", etc.
+     "json_data": {
+       "vertices": [
+         { "id": 0, "x": 50, "y": 20, "connections": 2 },
+         { "id": 1, "x": 20, "y": 80, "connections": 2 },
+         { "id": 2, "x": 80, "y": 80, "connections": 2 }
+       ],
+       "triangles": [
+         { "v1": 0, "v2": 1, "v3": 2, "color": "#f7da21" }
+       ]
+     }
+   }
+   ```
+
+3. **Restart the application**:
+   ```bash
+   docker-compose down
+   docker-compose up --build
+   ```
+   
+   The seed script automatically imports new puzzles on startup.
+
+### Method 2: Database Direct Insert (For Production)
+
+1. **Access the database**:
+   ```bash
+   docker-compose exec db psql -U vertex_user -d vertex_db
+   ```
+
+2. **Insert a puzzle**:
+   ```sql
+   INSERT INTO puzzles (name, difficulty, theme, json_data)
+   VALUES (
+     'My Custom Puzzle',
+     'medium',
+     'custom',
+     '{
+       "vertices": [
+         {"id": 0, "x": 50, "y": 20, "connections": 2},
+         {"id": 1, "x": 20, "y": 80, "connections": 2},
+         {"id": 2, "x": 80, "y": 80, "connections": 2}
+       ],
+       "triangles": [
+         {"v1": 0, "v2": 1, "v3": 2, "color": "#f7da21"}
+       ]
+     }'::jsonb
+   );
+   ```
+
+3. **Exit database**: `\q`
+
+### Method 3: Bulk Import Script
+
+1. **Create a new JSON file** with multiple puzzles:
+   ```bash
+   nano my-custom-puzzles.json
+   ```
+
+2. **Run the seed script with your file**:
+   ```bash
+   # Copy your file to the container
+   docker cp my-custom-puzzles.json vertex-backend:/app/puzzles.json
+   
+   # Run a custom seed
+   docker-compose exec backend node -e "
+   const { Client } = require('pg');
+   const fs = require('fs');
+   (async () => {
+     const client = new Client({ connectionString: process.env.DATABASE_URL });
+     await client.connect();
+     const puzzles = JSON.parse(fs.readFileSync('/app/puzzles.json'));
+     for (const p of puzzles) {
+       await client.query('INSERT INTO puzzles (name, difficulty, theme, json_data) VALUES (\$1, \$2, \$3, \$4)', 
+         [p.name, p.difficulty, p.theme, p.json_data]);
+       console.log('Added:', p.name);
+     }
+     await client.end();
+   })();
+   "
+   ```
+
+### Puzzle Format Specification
+
+**Vertices:**
+- `id`: Unique identifier (0, 1, 2, ...)
+- `x`, `y`: Coordinates (0-100 range recommended for scaling)
+- `connections`: Number of lines this vertex must have when complete
+
+**Triangles:**
+- `v1`, `v2`, `v3`: Vertex IDs that form the triangle
+- `color`: Hex color code from the Vertex palette
+
+**Available Colors:**
+- `#f7da21` - Bright yellow
+- `#b5e352` - Fresh green
+- `#e05c56` - Lively red/pink
+- `#00a2b3` - Striking teal/blue
+- `#fb9b00` - Vivid orange
+
+**Difficulty Guidelines:**
+- **Easy**: 3-5 vertices, 1-3 triangles
+- **Medium**: 6-10 vertices, 4-8 triangles
+- **Hard**: 10+ vertices, 8+ triangles
+
+### Tips for Creating Great Puzzles
+
+1. **Start Simple**: Begin with basic shapes (triangle, square, diamond)
+2. **Use Symmetry**: Symmetrical designs are more visually appealing
+3. **Test Connection Counts**: Each vertex's `connections` value must equal the number of lines it will have
+4. **Color Strategy**: Use contrasting colors for adjacent triangles
+5. **Theme Consistency**: Group similar puzzles by theme
+6. **Validation**: Test your puzzle in the game to ensure it's solvable
+
+### Example: Creating a Pentagon Puzzle
+
+```json
+{
+  "name": "Pentagon",
+  "difficulty": "medium",
+  "theme": "shapes",
+  "json_data": {
+    "vertices": [
+      { "id": 0, "x": 50, "y": 10, "connections": 2 },
+      { "id": 1, "x": 10, "y": 35, "connections": 2 },
+      { "id": 2, "x": 20, "y": 80, "connections": 2 },
+      { "id": 3, "x": 80, "y": 80, "connections": 2 },
+      { "id": 4, "x": 90, "y": 35, "connections": 2 },
+      { "id": 5, "x": 50, "y": 50, "connections": 5 }
+    ],
+    "triangles": [
+      { "v1": 0, "v2": 1, "v3": 5, "color": "#f7da21" },
+      { "v1": 1, "v2": 2, "v3": 5, "color": "#b5e352" },
+      { "v1": 2, "v2": 3, "v3": 5, "color": "#00a2b3" },
+      { "v1": 3, "v2": 4, "v3": 5, "color": "#e05c56" },
+      { "v1": 4, "v2": 0, "v3": 5, "color": "#fb9b00" }
+    ]
+  }
+}
+```
+
 ## Deployment
 
 ### Behind Caddy Reverse Proxy
@@ -377,11 +575,81 @@ vertex.yourdomain.com {
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! This project is open source and available for others to use, modify, and distribute.
+
+### How to Contribute
+
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make your changes**
+4. **Test thoroughly**: Ensure Docker build and game functionality work
+5. **Commit your changes**: `git commit -m 'Add amazing feature'`
+6. **Push to the branch**: `git push origin feature/amazing-feature`
+7. **Open a Pull Request**
+
+### Contribution Ideas
+
+- Add more puzzle designs
+- Improve UI/UX
+- Add new game features (hints, timer, leaderboards)
+- Enhance mobile responsiveness
+- Add puzzle generator tool
+- Improve documentation
+- Fix bugs
+- Add translations
+
+### Development Setup
+
+For local development without Docker:
+
+```bash
+# Backend
+cd backend
+npm install
+# Set up local PostgreSQL and configure .env
+npm run migrate
+npm run seed
+npm run dev
+
+# Frontend
+cd frontend
+# Serve with any static file server
+python3 -m http.server 8080
+```
 
 ## License
 
-See [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+**What this means:**
+- ✅ **Free to use** for personal or commercial projects
+- ✅ **Free to modify** and create derivative works
+- ✅ **Free to distribute** original or modified versions
+- ✅ **Free to sublicense** under different terms
+- ℹ️ **Requires** attribution to original authors
+- ℹ️ **Provided "as-is"** without warranties
+
+### MIT License Summary
+
+```
+MIT License
+
+Copyright (c) 2026 Amit Bahree
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND...
+```
+
+See the full [LICENSE](LICENSE) file for complete terms.
 
 ## Acknowledgments
 

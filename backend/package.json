@@ -12,7 +12,7 @@
     "test": "jest"
   },
   "keywords": ["vertex", "puzzle", "game"],
-  "author": "",
+  "author": "Amit Bahree",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
