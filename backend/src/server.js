@@ -45,8 +45,9 @@ app.use('/api/users', userRoutes);
 
 // Serve static frontend files
 const frontendPath = path.join(__dirname, '../../frontend');
+console.log(`📁 Serving static files from: ${frontendPath}`);
 app.use(express.static(frontendPath, {
-  maxAge: '1y',
+  maxAge: '1d',
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-cache');
@@ -57,7 +58,9 @@ app.use(express.static(frontendPath, {
 // SPA fallback - serve index.html for all non-API routes
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api/')) {
-    res.sendFile(path.join(frontendPath, 'index.html'));
+    const indexPath = path.join(frontendPath, 'index.html');
+    console.log(`📄 Serving index.html from: ${indexPath}`);
+    res.sendFile(indexPath);
   }
 });
 
