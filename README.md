@@ -10,14 +10,16 @@ A modern clone of the discontinued NYTimes Vertex puzzle game. Connect numbered 
 - 👤 **User Management**: Authentication, progress tracking, and statistics
 - 🔒 **Admin Panel**: User invitation and management system
 - 🐳 **Docker Deployment**: Easy deployment with Docker Compose
-- 🌐 **Caddy Compatible**: Works seamlessly behind Caddy reverse proxy
+- 🌐 **Universal Reverse Proxy Support**: Works with Caddy, Traefik, nginx, Apache, etc.
+- 🎲 **Automated Puzzle Generators**: Create unlimited puzzles instantly
 
 ## Tech Stack
 
 - **Frontend**: HTML5 Canvas, JavaScript, CSS3, PWA
-- **Backend**: Node.js, Express, JWT authentication
+- **Backend**: Node.js, Express (serves static files + API), JWT authentication
 - **Database**: PostgreSQL
-- **Deployment**: Docker, Docker Compose
+- **Deployment**: Docker Compose (2 containers: backend + database)
+- **Architecture**: nginx-free, single-port (8888) design
 
 ## Quick Start
 
@@ -184,9 +186,9 @@ The application runs on port 8888 by default. To change this, edit `docker-compo
 
 ```yaml
 services:
-  nginx:
+  backend:
     ports:
-      - "8888:80"
+      - "8888:8888"  # Change first 8888 to desired port
 ```
 
 ## Troubleshooting
@@ -213,7 +215,7 @@ netstat -ano | findstr :8888
 taskkill /PID <process_id> /F
 
 # Solution 2: Change the port in docker-compose.yml
-# Edit the nginx ports section to use a different port like 8889:80
+# Edit the backend ports section to use a different port like 8889:8888
 ```
 
 **Problem: Slow performance on Windows**
