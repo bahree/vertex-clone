@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -10,10 +11,12 @@ const userRoutes = require('./routes/users');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8888;
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Allow inline scripts for game
+}));
 app.use(cors({
   origin: process.env.CORS_ORIGIN || '*',
   credentials: true
@@ -39,6 +42,24 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/puzzles', puzzleRoutes);
 app.use('/api/users', userRoutes);
+
+// Serve static frontend files
+const frontendPath = path.join(__dirname, '../../frontend');
+app.use(express.static(frontendPath, {
+  maxAge: '1y',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }
+}));
+
+// SPA fallback - serve index.html for all non-API routes
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api/')) {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  }
+});
 
 // Error handling
 app.use(errorHandler);

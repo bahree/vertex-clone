@@ -17,7 +17,7 @@ A modern clone of the discontinued NYTimes Vertex puzzle game. Connect numbered 
 - **Frontend**: HTML5 Canvas, JavaScript, CSS3, PWA
 - **Backend**: Node.js, Express, JWT authentication
 - **Database**: PostgreSQL
-- **Deployment**: Docker, Docker Compose, Nginx
+- **Deployment**: Docker, Docker Compose
 
 ## Quick Start
 
@@ -56,7 +56,7 @@ A modern clone of the discontinued NYTimes Vertex puzzle game. Connect numbered 
    
    First run will take a few minutes to:
    - Build the backend Docker image
-   - Pull PostgreSQL and Nginx images
+   - Pull PostgreSQL image
    - Run database migrations
    - Seed sample puzzles
 
@@ -141,7 +141,7 @@ npm start
 
 #### Frontend
 
-The frontend is served by Nginx in Docker, or you can serve it with any static file server:
+The frontend is served by the Node.js Express backend in Docker, or you can serve it with any static file server:
 
 ```bash
 cd frontend
@@ -239,7 +239,6 @@ docker-compose logs backend
 ```bash
 docker-compose logs backend    # Backend API logs
 docker-compose logs db         # Database logs
-docker-compose logs nginx      # Nginx logs
 docker-compose logs -f         # Follow all logs
 ```
 
@@ -290,18 +289,16 @@ docker-compose exec db psql -U vertex_user -d vertex_db
 vertex-clone/
 ├── frontend/          # Game UI (HTML/CSS/JS)
 ├── backend/          # API server (Node.js/Express)
-├── nginx.conf        # Nginx configuration
 ├── docker-compose.yml # Docker orchestration
 └── README.md         # This file
 ```
 
-### Multi-Container Setup
+### Docker Container Setup
 
-- **Nginx**: Serves frontend, proxies `/api/*` to backend
-- **Backend**: Node.js API server (port 3000 internal)
+- **Backend**: Node.js API server that serves frontend static files and handles API requests (port 8888)
 - **PostgreSQL**: Database (port 5432 internal)
 
-Only Nginx is exposed on port 8888.
+Only the backend container is exposed on port 8888. This makes it easy to run behind any reverse proxy like Caddy, Traefik, or nginx.
 
 ## Game Mechanics
 
@@ -621,7 +618,11 @@ Convert images (emoji, icons, objects) to puzzles like original Vertex!
 
 ## Deployment
 
-### Behind Caddy Reverse Proxy
+### Behind Reverse Proxy (Caddy, Traefik, nginx, etc.)
+
+The application is designed to work behind any reverse proxy. It exposes a single port (8888) that handles both frontend static files and API endpoints.
+
+#### Caddy
 
 Add to your Caddyfile:
 
@@ -631,9 +632,44 @@ vertex.yourdomain.com {
 }
 ```
 
+Caddy automatically handles SSL certificates with Let's Encrypt.
+
+#### Traefik
+
+docker-compose labels:
+
+```yaml
+labels:
+  - "traefik.enable=true"
+  - "traefik.http.routers.vertex.rule=Host(`vertex.yourdomain.com`)"
+  - "traefik.http.services.vertex.loadbalancer.server.port=8888"
+```
+
+#### nginx
+
+nginx configuration:
+
+```nginx
+server {
+    listen 80;
+    server_name vertex.yourdomain.com;
+    
+    location / {
+        proxy_pass http://localhost:8888;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
 ### SSL/HTTPS
 
-Caddy automatically handles SSL certificates. For manual setup:
+Most reverse proxies handle SSL automatically. For Caddy manual setup:
 
 ```
 vertex.yourdomain.com {
