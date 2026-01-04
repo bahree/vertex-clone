@@ -1,0 +1,96 @@
+[
+  {
+    "name": "Simple Triangle",
+    "difficulty": "easy",
+    "theme": "shapes",
+    "json_data": {
+      "vertices": [
+        { "id": 0, "x": 50, "y": 20, "connections": 2 },
+        { "id": 1, "x": 20, "y": 80, "connections": 2 },
+        { "id": 2, "x": 80, "y": 80, "connections": 2 }
+      ],
+      "triangles": [
+        { "v1": 0, "v2": 1, "v3": 2, "color": "#f7da21" }
+      ]
+    }
+  },
+  {
+    "name": "Diamond",
+    "difficulty": "easy",
+    "theme": "shapes",
+    "json_data": {
+      "vertices": [
+        { "id": 0, "x": 50, "y": 10, "connections": 2 },
+        { "id": 1, "x": 10, "y": 50, "connections": 2 },
+        { "id": 2, "x": 90, "y": 50, "connections": 2 },
+        { "id": 3, "x": 50, "y": 90, "connections": 2 }
+      ],
+      "triangles": [
+        { "v1": 0, "v2": 1, "v3": 2, "color": "#b5e352" },
+        { "v1": 1, "v2": 2, "v3": 3, "color": "#00a2b3" }
+      ]
+    }
+  },
+  {
+    "name": "Heart",
+    "difficulty": "medium",
+    "theme": "love",
+    "json_data": {
+      "vertices": [
+        { "id": 0, "x": 30, "y": 25, "connections": 3 },
+        { "id": 1, "x": 70, "y": 25, "connections": 3 },
+        { "id": 2, "x": 50, "y": 40, "connections": 4 },
+        { "id": 3, "x": 20, "y": 50, "connections": 2 },
+        { "id": 4, "x": 80, "y": 50, "connections": 2 },
+        { "id": 5, "x": 50, "y": 85, "connections": 2 }
+      ],
+      "triangles": [
+        { "v1": 0, "v2": 1, "v3": 2, "color": "#e05c56" },
+        { "v1": 0, "v2": 2, "v3": 3, "color": "#e05c56" },
+        { "v1": 1, "v2": 2, "v3": 4, "color": "#e05c56" },
+        { "v1": 2, "v2": 3, "v3": 5, "color": "#fb9b00" },
+        { "v1": 2, "v2": 4, "v3": 5, "color": "#fb9b00" }
+      ]
+    }
+  },
+  {
+    "name": "Star",
+    "difficulty": "medium",
+    "theme": "shapes",
+    "json_data": {
+      "vertices": [
+        { "id": 0, "x": 50, "y": 10, "connections": 2 },
+        { "id": 1, "x": 30, "y": 40, "connections": 3 },
+        { "id": 2, "x": 70, "y": 40, "connections": 3 },
+        { "id": 3, "x": 15, "y": 70, "connections": 2 },
+        { "id": 4, "x": 85, "y": 70, "connections": 2 },
+        { "id": 5, "x": 50, "y": 90, "connections": 2 }
+      ],
+      "triangles": [
+        { "v1": 0, "v2": 1, "v3": 2, "color": "#f7da21" },
+        { "v1": 1, "v2": 2, "v3": 5, "color": "#fb9b00" },
+        { "v1": 1, "v2": 3, "v3": 5, "color": "#b5e352" },
+        { "v1": 2, "v2": 4, "v3": 5, "color": "#00a2b3" }
+      ]
+    }
+  },
+  {
+    "name": "House",
+    "difficulty": "easy",
+    "theme": "objects",
+    "json_data": {
+      "vertices": [
+        { "id": 0, "x": 50, "y": 15, "connections": 2 },
+        { "id": 1, "x": 20, "y": 40, "connections": 3 },
+        { "id": 2, "x": 80, "y": 40, "connections": 3 },
+        { "id": 3, "x": 20, "y": 85, "connections": 2 },
+        { "id": 4, "x": 80, "y": 85, "connections": 2 }
+      ],
+      "triangles": [
+        { "v1": 0, "v2": 1, "v3": 2, "color": "#e05c56" },
+        { "v1": 1, "v2": 2, "v3": 3, "color": "#f7da21" },
+        { "v1": 2, "v2": 3, "v3": 4, "color": "#b5e352" }
+      ]
+    }
+  }
+]
